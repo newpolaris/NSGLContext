@@ -7,15 +7,22 @@
  */
 
 #import "GLEssentialsGLView.h"
+#import "NSGLRenderer.h"
 #import "OpenGLRenderer.h"
+#import "LegacyGLRenderer.h"
 
 #define SUPPORT_RETINA_RESOLUTION 1
 
 @interface GLEssentialsGLView ()
 {
-    OpenGLRenderer* _renderer;
+    bool _isLeagacy;
+    NSOpenGLContext* _currentContext;
+    id<NSGLRenderer> _renderer;
+    
     NSOpenGLContext* legacyContext;
     NSOpenGLContext* coreContext;
+    id<NSGLRenderer> _legacyRenderer;
+    id<NSGLRenderer> _coreRenderer;
 }
 @end
 
@@ -79,6 +86,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (void) awakeFromNib
 {
     [self createLegayContext];
+    _legacyRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0];
     
     NSOpenGLPixelFormatAttribute attrs[] =
 	{
@@ -125,18 +133,21 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
  
     // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
     // OSX (but not iOS since iOS apps must create their own FBO)
-    _renderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0];
+    _coreRenderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0];
     
 #if SUPPORT_RETINA_RESOLUTION
     // Opt-In to Retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
 #endif // SUPPORT_RETINA_RESOLUTION
     
+    [self setupDisplayLink];
+    
+    _renderer = _coreRenderer;
+    _currentContext = coreContext;
+    _isLeagacy = false;
+    
     // setViewport with exist _renderer object
     [self reshape];
-    
-    [self setupDisplayLink];
-
 }
 
 - (void) prepareOpenGL
@@ -186,7 +197,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	// resizing the view, -drawRect is called on the main thread.
 	// Add a mutex around to avoid the threads accessing the context
 	// simultaneously when resizing.
-	CGLLockContext([[self openGLContext] CGLContextObj]);
+	CGLLockContext([_currentContext CGLContextObj]);
 
 	// Get the view size in Points
 	NSRect viewRectPoints = [self bounds];
@@ -222,7 +233,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	[_renderer resizeWithWidth:viewRectPixels.size.width
                       AndHeight:viewRectPixels.size.height];
 	
-	CGLUnlockContext([[self openGLContext] CGLContextObj]);
+	CGLUnlockContext([_currentContext CGLContextObj]);
 }
 
 - (void) swapContext
@@ -254,18 +265,18 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void) drawView
 {	 
-	[[self openGLContext] makeCurrentContext];
+	[_currentContext makeCurrentContext];
 
 	// We draw on a secondary thread through the display link
 	// When resizing the view, -reshape is called automatically on the main
 	// thread. Add a mutex around to avoid the threads accessing the context
 	// simultaneously when resizing
-	CGLLockContext([[self openGLContext] CGLContextObj]);
+	CGLLockContext([_currentContext CGLContextObj]);
 
 	[_renderer render];
 
-	CGLFlushDrawable([[self openGLContext] CGLContextObj]);
-	CGLUnlockContext([[self openGLContext] CGLContextObj]);
+	CGLFlushDrawable([_currentContext CGLContextObj]);
+	CGLUnlockContext([_currentContext CGLContextObj]);
 }
 
 - (void) dealloc
