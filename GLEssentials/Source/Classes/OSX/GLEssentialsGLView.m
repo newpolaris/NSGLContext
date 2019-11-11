@@ -14,6 +14,8 @@
 @interface GLEssentialsGLView ()
 {
     OpenGLRenderer* _renderer;
+    NSOpenGLContext* legacyContext;
+    NSOpenGLContext* coreContext;
 }
 @end
 
@@ -43,6 +45,27 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     return result;
 }
 
+- (void) createLegayContext
+{
+    NSOpenGLPixelFormatAttribute attrs[] =
+    {
+        NSOpenGLPFADoubleBuffer,
+        NSOpenGLPFADepthSize, 24,
+        NSOpenGLPFAOpenGLProfile,
+        NSOpenGLProfileVersionLegacy,
+        0
+    };
+    
+    NSOpenGLPixelFormat *pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+        
+    if (!pf)
+    {
+        NSLog(@"No OpenGL pixel format");
+    }
+    legacyContext = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    [legacyContext makeCurrentContext];
+}
+
 - (void) awakeFromNib
 {
     NSOpenGLPixelFormatAttribute attrs[] =
@@ -50,7 +73,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 		NSOpenGLPFADoubleBuffer,
 		NSOpenGLPFADepthSize, 24,
 		// Must specify the 3.2 Core Profile to use OpenGL 3.2
-#if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3 
+#if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3
 		NSOpenGLPFAOpenGLProfile,
 		NSOpenGLProfileVersion3_2Core,
 #endif
@@ -64,7 +87,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 		NSLog(@"No OpenGL pixel format");
 	}
 	   
-    NSOpenGLContext* context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    NSOpenGLContext* context = coreContext = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
     
 #if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3 && defined(DEBUG)
 	// When we're using a CoreProfile context, crash if we call a legacy OpenGL function
@@ -76,43 +99,47 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 #endif
 	
     [self setPixelFormat:pf];
-
     [self setOpenGLContext:context];
+    [self setupOpenGL];
     
 #if SUPPORT_RETINA_RESOLUTION
     // Opt-In to Retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
 #endif // SUPPORT_RETINA_RESOLUTION
     
+    [self createLegayContext];
 }
 
 - (void) prepareOpenGL
 {
 	[super prepareOpenGL];
-	
-	// Make all the OpenGL calls to setup rendering  
-	//  and build the necessary rendering objects
-	[self initGL];
-	
-	// Create a display link capable of being used with all active displays
-	CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
-	
-	// Set the renderer output callback function
-	CVDisplayLinkSetOutputCallback(displayLink, &MyDisplayLinkCallback, (__bridge void*)self);
-	
-	// Set the display link for the current renderer
-	CGLContextObj cglContext = [[self openGLContext] CGLContextObj];
-	CGLPixelFormatObj cglPixelFormat = [[self pixelFormat] CGLPixelFormatObj];
-	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, cglContext, cglPixelFormat);
-	
-	// Activate the display link
-	CVDisplayLinkStart(displayLink);
-	
-	// Register to be notified when the window closes so we can stop the displaylink
-	[[NSNotificationCenter defaultCenter] addObserver:self
-											 selector:@selector(windowWillClose:)
-												 name:NSWindowWillCloseNotification
-											   object:[self window]];
+}
+
+- (void) setupOpenGL
+{
+    // Make all the OpenGL calls to setup rendering
+    //  and build the necessary rendering objects
+    [self initGL];
+    
+    // Create a display link capable of being used with all active displays
+    CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
+    
+    // Set the renderer output callback function
+    CVDisplayLinkSetOutputCallback(displayLink, &MyDisplayLinkCallback, (__bridge void*)self);
+    
+    // Set the display link for the current renderer
+    CGLContextObj cglContext = [[self openGLContext] CGLContextObj];
+    CGLPixelFormatObj cglPixelFormat = [[self pixelFormat] CGLPixelFormatObj];
+    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, cglContext, cglPixelFormat);
+    
+    // Activate the display link
+    CVDisplayLinkStart(displayLink);
+    
+    // Register to be notified when the window closes so we can stop the displaylink
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(windowWillClose:)
+                                                 name:NSWindowWillCloseNotification
+                                               object:[self window]];
 }
 
 - (void) windowWillClose:(NSNotification*)notification
