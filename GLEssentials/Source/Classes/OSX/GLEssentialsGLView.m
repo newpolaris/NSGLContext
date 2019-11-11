@@ -62,12 +62,24 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     {
         NSLog(@"No OpenGL pixel format");
     }
-    legacyContext = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    NSOpenGLContext* context = legacyContext = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
     [legacyContext makeCurrentContext];
+    
+    // Synchronize buffer swaps with vertical refresh rate
+    GLint swapInt = 1;
+    [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    [context setView:self];
+}
+
+- (NSOpenGLContext*)openGLContext
+{
+    return coreContext;
 }
 
 - (void) awakeFromNib
 {
+    [self createLegayContext];
+    
     NSOpenGLPixelFormatAttribute attrs[] =
 	{
 		NSOpenGLPFADoubleBuffer,
@@ -97,17 +109,34 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	// but it would be more difficult to see where that function was called.
 	CGLEnable([context CGLContextObj], kCGLCECrashOnRemovedFunctions);
 #endif
-	
-    [self setPixelFormat:pf];
-    [self setOpenGLContext:context];
-    [self setupOpenGL];
+
+    // The reshape function may have changed the thread to which our OpenGL
+    // context is attached before prepareOpenGL and initGL are called.  So call
+    // makeCurrentContext to ensure that our OpenGL context current to this
+    // thread (i.e. makeCurrentContext directs all OpenGL calls on this thread
+    // to [self openGLContext])
+    [context makeCurrentContext];
+    
+    // Synchronize buffer swaps with vertical refresh rate
+    GLint swapInt = 1;
+    [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+
+    [context setView:self];
+ 
+    // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
+    // OSX (but not iOS since iOS apps must create their own FBO)
+    _renderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0];
     
 #if SUPPORT_RETINA_RESOLUTION
     // Opt-In to Retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
 #endif // SUPPORT_RETINA_RESOLUTION
     
-    [self createLegayContext];
+    // setViewport with exist _renderer object
+    [self reshape];
+    
+    [self setupDisplayLink];
+
 }
 
 - (void) prepareOpenGL
@@ -115,12 +144,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	[super prepareOpenGL];
 }
 
-- (void) setupOpenGL
+- (void) setupDisplayLink
 {
-    // Make all the OpenGL calls to setup rendering
-    //  and build the necessary rendering objects
-    [self initGL];
-    
     // Create a display link capable of being used with all active displays
     CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
     
@@ -151,24 +176,6 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	// fire without renderbuffers, OpenGL draw calls will set errors.
 	
 	CVDisplayLinkStop(displayLink);
-}
-
-- (void) initGL
-{
-	// The reshape function may have changed the thread to which our OpenGL
-	// context is attached before prepareOpenGL and initGL are called.  So call
-	// makeCurrentContext to ensure that our OpenGL context current to this 
-	// thread (i.e. makeCurrentContext directs all OpenGL calls on this thread
-	// to [self openGLContext])
-	[[self openGLContext] makeCurrentContext];
-	
-	// Synchronize buffer swaps with vertical refresh rate
-	GLint swapInt = 1;
-	[[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-	
-	// Init our renderer.  Use 0 for the defaultFBO which is appropriate for
-	// OSX (but not iOS since iOS apps must create their own FBO)
-	_renderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0];
 }
 
 - (void)reshape
