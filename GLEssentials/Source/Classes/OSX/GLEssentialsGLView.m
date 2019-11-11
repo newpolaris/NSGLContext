@@ -238,7 +238,21 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void) swapContext
 {
+    // wait until currentContext release;
+    NSOpenGLContext* context = _currentContext;
+    CGLLockContext([context CGLContextObj]);
     
+    if (_isLeagacy) {
+        _renderer = _coreRenderer;
+        _currentContext = coreContext;
+        _isLeagacy = false;
+    } else {
+        _renderer = _legacyRenderer;
+        _currentContext = legacyContext;
+        _isLeagacy = true;
+    }
+    
+    CGLUnlockContext([context CGLContextObj]);
 }
 
 - (void)renewGState
