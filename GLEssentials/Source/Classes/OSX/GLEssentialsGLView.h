@@ -17,4 +17,6 @@
 	CVDisplayLinkRef displayLink;
 }
 
+-(void) swapContext;
+
 @end

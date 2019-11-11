@@ -10,10 +10,7 @@
 #include "NSGLRenderer.h"
 #import <Foundation/Foundation.h>
 
-
-@interface OpenGLRenderer : NSObject <NSGLRenderer>
-
-@property (nonatomic) GLuint defaultFBOName;
+@interface LegacyGLRenderer : NSObject <NSGLRenderer>
 
 - (instancetype) initWithDefaultFBO: (GLuint) defaultFBOName;
 - (void) resizeWithWidth:(GLuint)width AndHeight:(GLuint)height;

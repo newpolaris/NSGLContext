@@ -34,6 +34,12 @@
 	return self;
 }
 
+- (void) swapContext
+{
+    GLEssentialsGLView* view = (GLEssentialsGLView*)self.window.contentView;
+    [view swapContext];
+}
+
 - (void) goFullscreen
 {
 	// If app is already fullscreen...
@@ -114,6 +120,10 @@
 				[self goWindow];
 			}
 			return;
+            
+        case 'a':
+            [self swapContext];
+            return;
 		// Have f key toggle fullscreen
 		case 'f':
 			if(_fullscreenWindow == nil)

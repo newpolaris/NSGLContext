@@ -225,6 +225,10 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	CGLUnlockContext([[self openGLContext] CGLContextObj]);
 }
 
+- (void) swapContext
+{
+    
+}
 
 - (void)renewGState
 {	

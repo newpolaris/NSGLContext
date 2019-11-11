@@ -45,6 +45,8 @@
 		3A622B961A899CF400A12489 /* GLEssentialsGLView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A622B711A899CDE00A12489 /* GLEssentialsGLView.m */; };
 		3A622B971A899CF400A12489 /* GLEssentialsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A622B731A899CDE00A12489 /* GLEssentialsWindowController.m */; };
 		3A622B981A899E5000A12489 /* OpenGLRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 3A622B6C1A899CDE00A12489 /* OpenGLRenderer.m */; };
+		6601EFFC23795C9900B3D03C /* LegacyGLRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6601EFFB23795C9900B3D03C /* LegacyGLRenderer.m */; };
+		6601EFFD23795C9900B3D03C /* LegacyGLRenderer.m in Sources */ = {isa = PBXBuildFile; fileRef = 6601EFFB23795C9900B3D03C /* LegacyGLRenderer.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -92,6 +94,9 @@
 		3A622B7E1A899CDE00A12489 /* sourceUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sourceUtil.h; sourceTree = "<group>"; };
 		3A622B7F1A899CDE00A12489 /* vectorUtil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vectorUtil.c; sourceTree = "<group>"; };
 		3A622B801A899CDE00A12489 /* vectorUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vectorUtil.h; sourceTree = "<group>"; };
+		6601EFFA23794E5D00B3D03C /* NSGLRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSGLRenderer.h; sourceTree = "<group>"; };
+		6601EFFB23795C9900B3D03C /* LegacyGLRenderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LegacyGLRenderer.m; sourceTree = "<group>"; };
+		6601EFFE23795CB600B3D03C /* LegacyGLRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LegacyGLRenderer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -202,6 +207,9 @@
 				3A622B6D1A899CDE00A12489 /* OSX */,
 				3A622B6B1A899CDE00A12489 /* OpenGLRenderer.h */,
 				3A622B6C1A899CDE00A12489 /* OpenGLRenderer.m */,
+				6601EFFA23794E5D00B3D03C /* NSGLRenderer.h */,
+				6601EFFB23795C9900B3D03C /* LegacyGLRenderer.m */,
+				6601EFFE23795CB600B3D03C /* LegacyGLRenderer.h */,
 			);
 			path = Classes;
 			sourceTree = "<group>";
@@ -311,6 +319,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 				Base,
 			);
@@ -369,6 +378,7 @@
 				3A622B811A899CDE00A12489 /* AppDelegate.m in Sources */,
 				3A622B821A899CDE00A12489 /* EAGLView.m in Sources */,
 				3A622B8D1A899CDE00A12489 /* sourceUtil.c in Sources */,
+				6601EFFC23795C9900B3D03C /* LegacyGLRenderer.m in Sources */,
 				3A622B8E1A899CDE00A12489 /* vectorUtil.c in Sources */,
 				3A622B8C1A899CDE00A12489 /* modelUtil.c in Sources */,
 				3A622B891A899CDE00A12489 /* main.m in Sources */,
@@ -389,6 +399,7 @@
 				3A622B961A899CF400A12489 /* GLEssentialsGLView.m in Sources */,
 				3A622B911A899CE900A12489 /* modelUtil.c in Sources */,
 				3A622B941A899CEC00A12489 /* main.m in Sources */,
+				6601EFFD23795C9900B3D03C /* LegacyGLRenderer.m in Sources */,
 				3A622B951A899CF400A12489 /* GLEssentialsFullscreenWindow.m in Sources */,
 				3A622B8F1A899CE900A12489 /* imageUtil.m in Sources */,
 				3A622B981A899E5000A12489 /* OpenGLRenderer.m in Sources */,
