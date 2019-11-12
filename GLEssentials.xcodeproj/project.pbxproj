@@ -95,7 +95,7 @@
 		3A622B7F1A899CDE00A12489 /* vectorUtil.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = vectorUtil.c; sourceTree = "<group>"; };
 		3A622B801A899CDE00A12489 /* vectorUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vectorUtil.h; sourceTree = "<group>"; };
 		6601EFFA23794E5D00B3D03C /* NSGLRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = NSGLRenderer.h; sourceTree = "<group>"; };
-		6601EFFB23795C9900B3D03C /* LegacyGLRenderer.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LegacyGLRenderer.m; sourceTree = "<group>"; };
+		6601EFFB23795C9900B3D03C /* LegacyGLRenderer.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc; path = LegacyGLRenderer.m; sourceTree = "<group>"; };
 		6601EFFE23795CB600B3D03C /* LegacyGLRenderer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = LegacyGLRenderer.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 

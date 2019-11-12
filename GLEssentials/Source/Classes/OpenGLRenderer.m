@@ -12,6 +12,7 @@
 #import "imageUtil.h"
 #import "modelUtil.h"
 #import "sourceUtil.h"
+#import <AppKit/AppKit.h>
 
 // Toggle this to disable vertex buffer objects
 // (i.e. use client-side vertex array objects)
@@ -40,7 +41,7 @@ enum {
 @interface OpenGLRenderer ()
 {
     GLuint _defaultFBOName;
-
+    NSOpenGLContext* context;
 #if RENDER_REFLECTION
     demoModel* _quadModel;
     GLenum _quadPrimType;
@@ -830,10 +831,13 @@ static GLsizei GetGLTypeSize(GLenum type)
 	
 }
 
-- (id) initWithDefaultFBO: (GLuint) defaultFBOName
+- (id) initWithDefaultFBO: (GLuint) defaultFBOName withContext:(id)ctx
 {
 	if((self = [super init]))
 	{
+        context = ctx;
+        [context makeCurrentContext];
+        
 		NSLog(@"%s %s", glGetString(GL_RENDERER), glGetString(GL_VERSION));
 		
 		////////////////////////////////////////////////////
@@ -1036,6 +1040,8 @@ static GLsizei GetGLTypeSize(GLenum type)
 
 - (void) dealloc
 {
+    [context makeCurrentContext];;
+    
 	// Cleanup all OpenGL objects and
 	glDeleteTextures(1, &_characterTexName);
 		

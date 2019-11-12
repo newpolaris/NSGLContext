@@ -86,7 +86,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (void) awakeFromNib
 {
     [self createLegayContext];
-    _legacyRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0];
+    _legacyRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0 withContext:legacyContext];
     
     NSOpenGLPixelFormatAttribute attrs[] =
 	{
@@ -133,7 +133,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
  
     // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
     // OSX (but not iOS since iOS apps must create their own FBO)
-    _coreRenderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0];
+    _coreRenderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0 withContext:context];
     
 #if SUPPORT_RETINA_RESOLUTION
     // Opt-In to Retina resolution

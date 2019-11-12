@@ -9,13 +9,13 @@
 #include "glUtil.h"
 #include "NSGLRenderer.h"
 #import <Foundation/Foundation.h>
-
+#import <Appkit/AppKit.h>
 
 @interface OpenGLRenderer : NSObject <NSGLRenderer>
 
 @property (nonatomic) GLuint defaultFBOName;
 
-- (instancetype) initWithDefaultFBO: (GLuint) defaultFBOName;
+- (instancetype)initWithDefaultFBO:(GLuint)defaultFBOName withContext:(NSOpenGLContext*)ctx;
 - (void) resizeWithWidth:(GLuint)width AndHeight:(GLuint)height;
 - (void) render;
 - (void) dealloc;
