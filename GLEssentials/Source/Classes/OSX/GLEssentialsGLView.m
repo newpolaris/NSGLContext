@@ -85,6 +85,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void) awakeFromNib
 {
+    [self setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
+    
     [self createLegayContext];
     _legacyRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0 withContext:legacyContext];
     
@@ -128,7 +130,6 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     // Synchronize buffer swaps with vertical refresh rate
     GLint swapInt = 1;
     [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-
     [context setView:self];
  
     // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
@@ -178,6 +179,12 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
                                              selector:@selector(windowWillClose:)
                                                  name:NSWindowWillCloseNotification
                                                object:[self window]];
+    
+    // Register to be notified when the window closes so we can stop the displaylink
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(windowDidResize:)
+                                                 name:NSWindowDidResizeNotification
+                                               object:[self window]];
 }
 
 - (void) windowWillClose:(NSNotification*)notification
@@ -187,6 +194,12 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	// fire without renderbuffers, OpenGL draw calls will set errors.
 	
 	CVDisplayLinkStop(displayLink);
+}
+
+
+- ( void ) windowDidResize:(NSNotification *)notofication
+{
+    [self reshape];
 }
 
 - (void)reshape
@@ -229,18 +242,24 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
 #endif // !SUPPORT_RETINA_RESOLUTION
     
+    [_currentContext makeCurrentContext];
+    
 	// Set the new dimensions in our renderer
 	[_renderer resizeWithWidth:viewRectPixels.size.width
                       AndHeight:viewRectPixels.size.height];
-	
+    
+    // Synchronize buffer swaps with vertical refresh rate
+    GLint swapInt = 1;
+    [_currentContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    [_currentContext update];
+    
 	CGLUnlockContext([_currentContext CGLContextObj]);
 }
 
 - (void) swapContext
 {
-    // wait until currentContext release;
-    NSOpenGLContext* context = _currentContext;
-    CGLLockContext([context CGLContextObj]);
+    CGLLockContext([coreContext CGLContextObj]);
+    CGLLockContext([legacyContext CGLContextObj]);
     
     if (_isLeagacy) {
         _renderer = _coreRenderer;
@@ -251,8 +270,18 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
         _currentContext = legacyContext;
         _isLeagacy = true;
     }
+ 
+    [_currentContext makeCurrentContext];
+    [_currentContext setView:self];
+    [self reshape];
     
-    CGLUnlockContext([context CGLContextObj]);
+    // Synchronize buffer swaps with vertical refresh rate
+    GLint swapInt = 1;
+    [_currentContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    [_currentContext update];
+    
+    CGLUnlockContext([legacyContext CGLContextObj]);
+    CGLUnlockContext([coreContext CGLContextObj]);
 }
 
 - (void)renewGState
