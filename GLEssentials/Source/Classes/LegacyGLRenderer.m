@@ -23,14 +23,15 @@
 - (bool)createProgram
 {
     char vertex[] = "\
+        uniform mat4 mat; \
         attribute vec2 position; \
         void main() { \
-         gl_Position = vec4(position, 0.0, 1.0); \
+            gl_Position = mat * vec4(position, 0.0, 1.0); \
         }";
 
     char fragment[] = "\
         void main() {  \
-         gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0); \
+            gl_FragColor = vec4(1.0, 1.0, 0.0, 1.0); \
         }";
 
     GLint  vertexShader = [self createShader:GL_VERTEX_SHADER
@@ -131,6 +132,21 @@
     return self;
 }
 
+- (void)applyRotation:(float)radians
+{
+    float s = sin(radians);
+    float c = cos(radians);
+    float rot[16] = {
+        c,-s, 0, 0,
+        s, c, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1,
+    };
+    
+    GLint matLocation = glGetUniformLocation(program, "mat");
+    glUniformMatrix4fv(matLocation, 1, 0, &rot[0]);
+}
+
 - (GLuint)createShader:(GLenum)type Code:(const char*)code
 {
     GLuint shader = glCreateShader(type);
@@ -156,6 +172,9 @@
 }
 
 - (void)render {
+    static float radians = 0.0;
+    radians += 0.01f;
+    
     // Always use this clear color
     glClearColor(1.0f, 0.4f, 0.5f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -163,6 +182,8 @@
     // Bind our default FBO to render to the screen
     glBindFramebuffer(GL_FRAMEBUFFER, _defaultFBOName);
     glUseProgram(program);
+    
+    [self applyRotation:radians];
     
     glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
     glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
