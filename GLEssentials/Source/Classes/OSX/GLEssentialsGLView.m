@@ -80,7 +80,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (NSOpenGLContext*)openGLContext
 {
-    return coreContext;
+    return _currentContext;
 }
 
 - (void) awakeFromNib
@@ -183,7 +183,13 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     // Register to be notified when the window closes so we can stop the displaylink
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(windowDidResize:)
-                                                 name:NSWindowDidResizeNotification
+                                                 name:NSViewFrameDidChangeNotification
+                                               object:[self window]];
+    
+    // Register to be notified when the window closes so we can stop the displaylink
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(windowDidResize:)
+                                                 name:NSViewGlobalFrameDidChangeNotification
                                                object:[self window]];
 }
 
@@ -197,23 +203,16 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 }
 
 
-- ( void ) windowDidResize:(NSNotification *)notofication
+- (void)windowDidResize:(NSNotification *)notofication
 {
-    [self reshape];
-}
+    // We draw on a secondary thread through the display link. However, when
+    // resizing the view, -drawRect is called on the main thread.
+    // Add a mutex around to avoid the threads accessing the context
+    // simultaneously when resizing.
+    CGLLockContext([_currentContext CGLContextObj]);
 
-- (void)reshape
-{	
-	[super reshape];
-	
-	// We draw on a secondary thread through the display link. However, when
-	// resizing the view, -drawRect is called on the main thread.
-	// Add a mutex around to avoid the threads accessing the context
-	// simultaneously when resizing.
-	CGLLockContext([_currentContext CGLContextObj]);
-
-	// Get the view size in Points
-	NSRect viewRectPoints = [self bounds];
+    // Get the view size in Points
+    NSRect viewRectPoints = [self bounds];
     
 #if SUPPORT_RETINA_RESOLUTION
 
@@ -244,8 +243,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
     [_currentContext makeCurrentContext];
     
-	// Set the new dimensions in our renderer
-	[_renderer resizeWithWidth:viewRectPixels.size.width
+    // Set the new dimensions in our renderer
+    [_renderer resizeWithWidth:viewRectPixels.size.width
                       AndHeight:viewRectPixels.size.height];
     
     // Synchronize buffer swaps with vertical refresh rate
@@ -253,35 +252,75 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [_currentContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
     [_currentContext update];
     
-	CGLUnlockContext([_currentContext CGLContextObj]);
+    CGLUnlockContext([_currentContext CGLContextObj]);
+}
+
+- (void)update
+{
+    NSOpenGLContext* context;
+    context = [self openGLContext];
+    
+    [context makeCurrentContext];
+    CGLLockContext([context CGLContextObj]);
+    [context update];
+    CGLUnlockContext([context CGLContextObj]);
+}
+
+- (void)clearGLContext
+{
+    if (_currentContext) {
+        [_currentContext clearDrawable];
+    }
+}
+- (void)setOpenGLContext:(NSOpenGLContext *)context
+{
+    if (context != _currentContext) {
+        [self clearGLContext];
+        _currentContext = context;
+        [_currentContext setView: self];
+    }
+    
+}
+- (void)reshape
+{
+    [self update];
+    [self drawView];
 }
 
 - (void) swapContext
 {
-    CGLLockContext([coreContext CGLContextObj]);
-    CGLLockContext([legacyContext CGLContextObj]);
-    
     if (_isLeagacy) {
         _renderer = _coreRenderer;
-        _currentContext = coreContext;
+        [self setOpenGLContext:coreContext];
         _isLeagacy = false;
     } else {
         _renderer = _legacyRenderer;
-        _currentContext = legacyContext;
+        [self setOpenGLContext:legacyContext];
         _isLeagacy = true;
     }
- 
-    [_currentContext makeCurrentContext];
-    [_currentContext setView:self];
-    [self reshape];
+
+}
+
+- (void)lockFocus
+{
+    NSOpenGLContext* context;
+    [super lockFocus];
     
-    // Synchronize buffer swaps with vertical refresh rate
-    GLint swapInt = 1;
-    [_currentContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-    [_currentContext update];
+    context = [self openGLContext];
+    if ([context view] != self) {
+        [context setView: self];
+    }
+}
+
+- (void)viewDidMoveToWindow
+{
+    [super viewDidMoveToWindow];
     
-    CGLUnlockContext([legacyContext CGLContextObj]);
-    CGLUnlockContext([coreContext CGLContextObj]);
+    if (!self.window) {
+        [[self openGLContext] clearDrawable];
+        return;
+    }
+    [self.openGLContext setView: self];
 }
 
 - (void)renewGState
