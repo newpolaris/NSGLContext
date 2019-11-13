@@ -220,7 +220,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self reshape];
 }
 
-- (void)reshape
+- (void) reshape
 {	
 	[super reshape];
 	
