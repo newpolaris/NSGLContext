@@ -279,8 +279,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
         _currentContext = context;
         [_currentContext setView: self];
     }
-    
 }
+
 - (void)reshape
 {
     [self update];
