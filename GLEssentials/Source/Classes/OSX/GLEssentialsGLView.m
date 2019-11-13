@@ -78,17 +78,24 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [context setView:self];
 }
 
+// TODO: lockFocus call this function
 - (NSOpenGLContext*)openGLContext
 {
-    return coreContext;
+    return _currentContext;
 }
 
+// this works find in version 10.14, but in 10.11.6, a frame operation
+// error occurs during renderer initialization. but, it seems to work
+// fine.
+// in the case of setOpenGLContext in sample project, the prepareOpenGL
+// function is called. It works find in that function.
 - (void) awakeFromNib
 {
     [self setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
     
     [self createLegayContext];
-    _legacyRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0 withContext:legacyContext];
+    _legacyRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0
+                                                       withContext:legacyContext];
     
     NSOpenGLPixelFormatAttribute attrs[] =
 	{
@@ -272,13 +279,15 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     }
  
     [_currentContext makeCurrentContext];
+    
+    [_currentContext setView:nil];
     [_currentContext setView:self];
-    [self reshape];
+    //[self reshape];
     
     // Synchronize buffer swaps with vertical refresh rate
-    GLint swapInt = 1;
-    [_currentContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-    [_currentContext update];
+    // GLint swapInt = 1;
+    //[_currentContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    //[_currentContext update];
     
     CGLUnlockContext([legacyContext CGLContextObj]);
     CGLUnlockContext([coreContext CGLContextObj]);
