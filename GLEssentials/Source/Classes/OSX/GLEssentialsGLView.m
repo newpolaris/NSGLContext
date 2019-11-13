@@ -166,12 +166,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     _isLeagacy = false;
     
     // setViewport with exist _renderer object
-    [self reshape];
-}
-
-- (void) prepareOpenGL
-{
-	[super prepareOpenGL];
+    [self windowDidResize:nil];
 }
 
 - (void) setupDisplayLink
@@ -217,13 +212,6 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - ( void ) windowDidResize:(NSNotification *)notofication
 {
-    [self reshape];
-}
-
-- (void) reshape
-{	
-	[super reshape];
-	
 	// We draw on a secondary thread through the display link. However, when
 	// resizing the view, -drawRect is called on the main thread.
 	// Add a mutex around to avoid the threads accessing the context

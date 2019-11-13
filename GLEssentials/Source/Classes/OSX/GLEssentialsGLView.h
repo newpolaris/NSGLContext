@@ -13,7 +13,7 @@
 #import "modelUtil.h"
 #import "imageUtil.h"
 
-@interface GLEssentialsGLView : NSOpenGLView {
+@interface GLEssentialsGLView : NSView {
 	CVDisplayLinkRef displayLink;
 }
 
