@@ -78,10 +78,21 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [context setView:self];
 }
 
-// TODO: lockFocus call this function
+// TODO: NSopenGLViewBackingLayer display call this function
 - (NSOpenGLContext*)openGLContext
 {
     return _currentContext;
+}
+
+- (void)lockFocus
+{
+    NSOpenGLContext* context;
+    [super lockFocus];
+    
+    context = [self openGLContext];
+    if ([context view] != self) {
+        [context setView:self];
+    }
 }
 
 // this works find in version 10.14, but in 10.11.6, a frame operation
@@ -280,9 +291,11 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
  
     [_currentContext makeCurrentContext];
     
+    // initialize view to make the view update when assigning self again.
     [_currentContext setView:nil];
+    
     [_currentContext setView:self];
-    //[self reshape];
+    // [self reshape];
     
     // Synchronize buffer swaps with vertical refresh rate
     // GLint swapInt = 1;
