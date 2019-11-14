@@ -36,7 +36,7 @@
 
 - (void) swapContext
 {
-    GLEssentialsGLView* view = (GLEssentialsGLView*)self.window.contentView;
+    GLEssentialsView* view = (GLEssentialsView*)self.window.contentView;
     [view swapContext];
 }
 

@@ -13,10 +13,11 @@
 #import "modelUtil.h"
 #import "imageUtil.h"
 
-@interface GLEssentialsGLView : NSView {
+@interface GLEssentialsView : NSView {
 	CVDisplayLinkRef displayLink;
 }
 
--(void) swapContext;
+- (void) swapContext;
+- (void) configure;
 
 @end

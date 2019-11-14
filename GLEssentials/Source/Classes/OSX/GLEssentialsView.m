@@ -6,7 +6,7 @@
  OpenGL view subclass.
  */
 
-#import "GLEssentialsGLView.h"
+#import "GLEssentialsView.h"
 #import "NSGLRenderer.h"
 #import "OpenGLRenderer.h"
 #import "LegacyGLRenderer.h"
@@ -15,7 +15,7 @@
 
 enum RenderType { legacy = 0, core, numRenderType };
 
-@interface GLEssentialsGLView ()
+@interface GLEssentialsView ()
 {
     bool _isLeagacy;
     NSOpenGLContext* _currentContext;
@@ -27,7 +27,7 @@ enum RenderType { legacy = 0, core, numRenderType };
 }
 @end
 
-@implementation GLEssentialsGLView
+@implementation GLEssentialsView
 
 
 - (CVReturn) getFrameForTime:(const CVTimeStamp*)outputTime
@@ -49,7 +49,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 									  CVOptionFlags* flagsOut, 
 									  void* displayLinkContext)
 {
-    CVReturn result = [(__bridge GLEssentialsGLView*)displayLinkContext getFrameForTime:outputTime];
+    CVReturn result = [(__bridge GLEssentialsView*)displayLinkContext getFrameForTime:outputTime];
     return result;
 }
 
@@ -88,38 +88,42 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 // function is called. It works find in that function.
 - (void) awakeFromNib
 {
+}
+
+- (void) configure
+{
     [self createLegayContext];
     _renderer[legacy] = [[LegacyGLRenderer alloc] initWithDefaultFBO:0
                                                          withContext:_context[legacy]];
     
     NSOpenGLPixelFormatAttribute attrs[] =
-	{
-		NSOpenGLPFADoubleBuffer,
-		NSOpenGLPFADepthSize, 24,
-		// Must specify the 3.2 Core Profile to use OpenGL 3.2
+    {
+        NSOpenGLPFADoubleBuffer,
+        NSOpenGLPFADepthSize, 24,
+        // Must specify the 3.2 Core Profile to use OpenGL 3.2
 #if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3
-		NSOpenGLPFAOpenGLProfile,
-		NSOpenGLProfileVersion3_2Core,
+        NSOpenGLPFAOpenGLProfile,
+        NSOpenGLProfileVersion3_2Core,
 #endif
-		0
-	};
-	
-	NSOpenGLPixelFormat *pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-	
-	if (!pf)
-	{
-		NSLog(@"No OpenGL pixel format");
-	}
-	   
+        0
+    };
+    
+    NSOpenGLPixelFormat *pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+    
+    if (!pf)
+    {
+        NSLog(@"No OpenGL pixel format");
+    }
+       
     NSOpenGLContext* context = _context[core] = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
     
 #if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3 && defined(DEBUG)
-	// When we're using a CoreProfile context, crash if we call a legacy OpenGL function
-	// This will make it much more obvious where and when such a function call is made so
-	// that we can remove such calls.
-	// Without this we'd simply get GL_INVALID_OPERATION error for calling legacy functions
-	// but it would be more difficult to see where that function was called.
-	CGLEnable([context CGLContextObj], kCGLCECrashOnRemovedFunctions);
+    // When we're using a CoreProfile context, crash if we call a legacy OpenGL function
+    // This will make it much more obvious where and when such a function call is made so
+    // that we can remove such calls.
+    // Without this we'd simply get GL_INVALID_OPERATION error for calling legacy functions
+    // but it would be more difficult to see where that function was called.
+    CGLEnable([context CGLContextObj], kCGLCECrashOnRemovedFunctions);
 #endif
 
     // The reshape function may have changed the thread to which our OpenGL

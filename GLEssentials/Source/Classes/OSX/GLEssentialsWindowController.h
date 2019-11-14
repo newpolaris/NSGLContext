@@ -8,7 +8,7 @@
 
 
 #import <Cocoa/Cocoa.h>
-#import "GLEssentialsGLView.h"
+#import "GLEssentialsView.h"
 
 @interface GLEssentialsWindowController : NSWindowController
 
