@@ -9,13 +9,13 @@ NSOpenGLView에서 setOpenGLContext 함수 호출은,
 
 하지만, 다른 context 로 변경했을 때 (makeCurrent / setView / clearDrawable / update 호출 등을 통한)
 
-framebuffer 갱신이 안되는 증상이 나타난다. 
+디폴트 framebuffer 크기가 갱신이 안되는 증상이 나타난다.
 
-clearDrawable을 호출할 경우 갱신은 이루어지나, 회색의 배경 프레임이 보인다.
+clearDrawable을 호출할 경우 갱신은 이루어지나, 회색의 배경이 몇 프레임 가량 보인다.
 
-결국, setOpenGLContext 를 쓰지않고 다른 방법을 찾아야 했다.
+결국, setOpenGLContext 를 쓰지않는 방법을 찾아야 했다.
 
-우선 몇개 알개된 건 몇가지
+우선 몇개 알개된 방법 몇가지,
 
 ### resize
 
@@ -34,18 +34,21 @@ update나 interval을 왜 계속 해야하는지 모르겠지만,
 
 ### swapcontext
 
-하나의 view에 여러 context를 쓰는 예제는 찾아보기 힘들었다.
+하나의 view에 여러 context를 쓰는 예제는 없었다
 
-bgfx는 window에 NSOpenGLView를 setContentView로 할당하거나,
+bgfx는 window에 NSOpenGLView를 사용하는데,
+새로운 NSOpenGLView를 생성하여 setContentView로 할당하거나,
 기존의 view가 있을 경우 addSubview를 호출하는 방식이다.
-context 교체에 대한 고려가 없다.
+단일 context와 view가 결합된 구조로 context 교체에 대한 고려가 없다.
 
-filament의 경우, context와 view가 분리되어 있는 구조이나, resize시 swapchain 를 다시 생성하는 형태
-context의 interval 설정은 context 생성시, update는 makeCurrent에서 이루어진다
-makeCurrent의 경우 view가 바뀔 경우 setView를 호출해준다
+filament의 경우, context와 view가 분리되어 있는 구조이다 (createDriver / makeCurrent )
+resize시에는 swapchain 를 다시 생성한다
+NSOpenGLContetx의 swap Interval 설정은 context 생성시, 
+NSOpenGLContext에 대한 update 호출은 makeCurrent에서 이루어진다
 
-위의 방식을 테스트 해보았으나, NSOpenGLView 와 NSView의 차이 때문인지,
-제대로 되지 않았다.
+makeCurrent 함수내에서, view를 비교하여 바뀌었을때 setView를 호출해준다
+
+위의 방식을 NSOpenGLView에 적용 해보았으나 제대로 작동하지 않았다.
 
 대신, 같은 view 대입시 예외 처리를 예상하고, 아래와 같은 방식을 시도하니
 정상 작동하게 되었다
@@ -79,9 +82,7 @@ GLError GL_INVALID_FRAMEBUFFER_OPERATION
 
 ## NSView 기반
 
-custom view 예제읜 [3] 번과 filament[2] 의 경우 NSView 기반이기 때문에 시도
-
-
+custom view 예제읜 [3] 번과 filament[2] 의 경우 NSView 기반이기 때문에 시도해 보았다
 
 
 ## subView 기반

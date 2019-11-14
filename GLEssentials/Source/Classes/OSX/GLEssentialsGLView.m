@@ -13,11 +13,14 @@
 
 #define SUPPORT_RETINA_RESOLUTION 1
 
+enum RenderType { legacy = 0, core = 1 };
+
 @interface GLEssentialsGLView ()
 {
     bool _isLeagacy;
     NSOpenGLContext* _currentContext;
     id<NSGLRenderer> _renderer;
+    
     
     NSOpenGLContext* legacyContext;
     NSOpenGLContext* coreContext;
@@ -76,23 +79,6 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     GLint swapInt = 1;
     [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
     [context setView:self];
-}
-
-// TODO: NSopenGLViewBackingLayer display call this function
-- (NSOpenGLContext*)openGLContext
-{
-    return _currentContext;
-}
-
-- (void)lockFocus
-{
-    NSOpenGLContext* context;
-    [super lockFocus];
-    
-    context = [self openGLContext];
-    if ([context view] != self) {
-        [context setView:self];
-    }
 }
 
 // this works find in version 10.14, but in 10.11.6, a frame operation
@@ -283,7 +269,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [_currentContext setView:nil];
     
     [_currentContext setView:self];
-    // [self reshape];
+    [self windowDidResize:nil];
     
     // Synchronize buffer swaps with vertical refresh rate
     // GLint swapInt = 1;
