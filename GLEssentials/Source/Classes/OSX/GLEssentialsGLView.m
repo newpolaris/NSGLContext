@@ -13,19 +13,17 @@
 
 #define SUPPORT_RETINA_RESOLUTION 1
 
-enum RenderType { legacy = 0, core = 1 };
+enum RenderType { legacy = 0, core, numRenderType };
 
 @interface GLEssentialsGLView ()
 {
     bool _isLeagacy;
     NSOpenGLContext* _currentContext;
-    id<NSGLRenderer> _renderer;
+    id<NSGLRenderer> _currentRenderer;
     
     
-    NSOpenGLContext* legacyContext;
-    NSOpenGLContext* coreContext;
-    id<NSGLRenderer> _legacyRenderer;
-    id<NSGLRenderer> _coreRenderer;
+    NSOpenGLContext* _context[numRenderType];
+    id<NSGLRenderer> _renderer[numRenderType];
 }
 @end
 
@@ -72,13 +70,15 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     {
         NSLog(@"No OpenGL pixel format");
     }
-    NSOpenGLContext* context = legacyContext = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
-    [legacyContext makeCurrentContext];
+    NSOpenGLContext* context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    [context makeCurrentContext];
     
     // Synchronize buffer swaps with vertical refresh rate
     GLint swapInt = 1;
     [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
     [context setView:self];
+    
+    _context[legacy] = context;
 }
 
 // this works find in version 10.14, but in 10.11.6, a frame operation
@@ -88,11 +88,9 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 // function is called. It works find in that function.
 - (void) awakeFromNib
 {
-    [self setAutoresizingMask:(NSViewHeightSizable | NSViewWidthSizable)];
-    
     [self createLegayContext];
-    _legacyRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0
-                                                       withContext:legacyContext];
+    _renderer[legacy] = [[LegacyGLRenderer alloc] initWithDefaultFBO:0
+                                                         withContext:_context[legacy]];
     
     NSOpenGLPixelFormatAttribute attrs[] =
 	{
@@ -113,7 +111,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 		NSLog(@"No OpenGL pixel format");
 	}
 	   
-    NSOpenGLContext* context = coreContext = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    NSOpenGLContext* context = _context[core] = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
     
 #if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3 && defined(DEBUG)
 	// When we're using a CoreProfile context, crash if we call a legacy OpenGL function
@@ -138,7 +136,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
  
     // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
     // OSX (but not iOS since iOS apps must create their own FBO)
-    _coreRenderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0 withContext:context];
+    _renderer[core] = [[OpenGLRenderer alloc] initWithDefaultFBO:0 withContext:context];
     
 #if SUPPORT_RETINA_RESOLUTION
     // Opt-In to Retina resolution
@@ -147,8 +145,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
     [self setupDisplayLink];
     
-    _renderer = _coreRenderer;
-    _currentContext = coreContext;
+    _currentRenderer = _renderer[core];
+    _currentContext = _context[core];
     _isLeagacy = false;
     
     // setViewport with exist _renderer object
@@ -237,7 +235,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [_currentContext makeCurrentContext];
     
 	// Set the new dimensions in our renderer
-	[_renderer resizeWithWidth:viewRectPixels.size.width
+	[_currentRenderer resizeWithWidth:viewRectPixels.size.width
                       AndHeight:viewRectPixels.size.height];
     
     // Synchronize buffer swaps with vertical refresh rate
@@ -250,16 +248,16 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void) swapContext
 {
-    CGLLockContext([coreContext CGLContextObj]);
-    CGLLockContext([legacyContext CGLContextObj]);
+    CGLLockContext([_context[core] CGLContextObj]);
+    CGLLockContext([_context[legacy] CGLContextObj]);
     
     if (_isLeagacy) {
-        _renderer = _coreRenderer;
-        _currentContext = coreContext;
+        _currentRenderer = _renderer[core];
+        _currentContext = _context[core];
         _isLeagacy = false;
     } else {
-        _renderer = _legacyRenderer;
-        _currentContext = legacyContext;
+        _currentRenderer = _renderer[legacy];
+        _currentContext = _context[legacy];
         _isLeagacy = true;
     }
  
@@ -276,8 +274,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     //[_currentContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
     //[_currentContext update];
     
-    CGLUnlockContext([legacyContext CGLContextObj]);
-    CGLUnlockContext([coreContext CGLContextObj]);
+    CGLUnlockContext([_context[legacy] CGLContextObj]);
+    CGLUnlockContext([_context[core] CGLContextObj]);
 }
 
 - (void)renewGState
@@ -312,7 +310,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	// simultaneously when resizing
 	CGLLockContext([_currentContext CGLContextObj]);
 
-	[_renderer render];
+	[_currentRenderer render];
 
 	CGLFlushDrawable([_currentContext CGLContextObj]);
 	CGLUnlockContext([_currentContext CGLContextObj]);
