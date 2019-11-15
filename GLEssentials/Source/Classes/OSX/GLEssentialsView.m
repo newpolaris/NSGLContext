@@ -13,7 +13,7 @@
 
 #define SUPPORT_RETINA_RESOLUTION 1
 
-enum RenderType { legacy = 0, core, numRenderType };
+enum ERenderType { kLegacy = 0, kCore, kNumRenderType };
 
 @interface GLEssentialsView ()
 {
@@ -22,8 +22,8 @@ enum RenderType { legacy = 0, core, numRenderType };
     id<NSGLRenderer> _currentRenderer;
     
     
-    NSOpenGLContext* _context[numRenderType];
-    id<NSGLRenderer> _renderer[numRenderType];
+    NSOpenGLContext* _context[kNumRenderType];
+    id<NSGLRenderer> _renderer[kNumRenderType];
 }
 @end
 
@@ -78,7 +78,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
     [context setView:self];
     
-    _context[legacy] = context;
+    _context[kLegacy] = context;
 }
 
 // this works find in version 10.14, but in 10.11.6, a frame operation
@@ -93,8 +93,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 - (void)configure
 {
     [self createLegayContext];
-    _renderer[legacy] = [[LegacyGLRenderer alloc] initWithDefaultFBO:0
-                                                         withContext:_context[legacy]];
+    _renderer[kLegacy] = [[LegacyGLRenderer alloc] initWithDefaultFBO:0
+                                                         withContext:_context[kLegacy]];
     
     NSOpenGLPixelFormatAttribute attrs[] =
     {
@@ -115,7 +115,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
         NSLog(@"No OpenGL pixel format");
     }
        
-    NSOpenGLContext* context = _context[core] = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    NSOpenGLContext* context = _context[kCore] = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
     
 #if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3 && defined(DEBUG)
     // When we're using a CoreProfile context, crash if we call a legacy OpenGL function
@@ -140,7 +140,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
  
     // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
     // OSX (but not iOS since iOS apps must create their own FBO)
-    _renderer[core] = [[OpenGLRenderer alloc] initWithDefaultFBO:0 withContext:context];
+    _renderer[kCore] = [[OpenGLRenderer alloc] initWithDefaultFBO:0 withContext:context];
     
 #if SUPPORT_RETINA_RESOLUTION
     // Opt-In to Retina resolution
@@ -149,8 +149,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
     [self setupDisplayLink];
     
-    _currentRenderer = _renderer[core];
-    _currentContext = _context[core];
+    _currentRenderer = _renderer[kCore];
+    _currentContext = _context[kCore];
     _isLeagacy = false;
     
     // setViewport with exist _renderer object
@@ -239,7 +239,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
 	// Set the new dimensions in our renderer
 	[_currentRenderer resizeWithWidth:viewRectPixels.size.width
-                      AndHeight:viewRectPixels.size.height];
+                            AndHeight:viewRectPixels.size.height];
     
     // Synchronize buffer swaps with vertical refresh rate
     GLint swapInt = 1;
@@ -251,19 +251,16 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)swapContext
 {
-    CGLLockContext([_context[core] CGLContextObj]);
-    CGLLockContext([_context[legacy] CGLContextObj]);
+    CGLLockContext([_context[kCore] CGLContextObj]);
+    CGLLockContext([_context[kLegacy] CGLContextObj]);
     
-    if (_isLeagacy) {
-        _currentRenderer = _renderer[core];
-        _currentContext = _context[core];
-        _isLeagacy = false;
-    } else {
-        _currentRenderer = _renderer[legacy];
-        _currentContext = _context[legacy];
-        _isLeagacy = true;
-    }
- 
+    // swap render type
+    _isLeagacy = !_isLeagacy;
+    
+    const int renderIndex = (int)_isLeagacy;
+    _currentRenderer = _renderer[renderIndex];
+    _currentContext = _context[renderIndex];
+
     [_currentContext makeCurrentContext];
     
     // initialize view to make the view update when assigning self again.
@@ -277,8 +274,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     //[_currentContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
     //[_currentContext update];
     
-    CGLUnlockContext([_context[legacy] CGLContextObj]);
-    CGLUnlockContext([_context[core] CGLContextObj]);
+    CGLUnlockContext([_context[kLegacy] CGLContextObj]);
+    CGLUnlockContext([_context[kCore] CGLContextObj]);
 }
 
 - (void)renewGState
