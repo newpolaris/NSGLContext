@@ -1038,17 +1038,19 @@ static GLsizei GetGLTypeSize(GLenum type)
 }
 
 
-- (void) dealloc
+- (void)dealloc
 {
     [context makeCurrentContext];;
     
 	// Cleanup all OpenGL objects and
 	glDeleteTextures(1, &_characterTexName);
-		
+    _characterTexName = 0;
+    
 	[self destroyVAO:_characterVAOName];
 
 	glDeleteProgram(_characterPrgName);
-
+    _characterPrgName = 0;
+    
 	mdlDestroyModel(_characterModel);
 
 #if RENDER_REFLECTION
@@ -1057,7 +1059,8 @@ static GLsizei GetGLTypeSize(GLenum type)
 	[self destroyVAO:_reflectVAOName];
 
 	glDeleteProgram(_reflectPrgName);
-	
+    _reflectPrgName = 0;
+    
 	mdlDestroyModel(_quadModel);
 #endif // RENDER_REFLECTION
 }

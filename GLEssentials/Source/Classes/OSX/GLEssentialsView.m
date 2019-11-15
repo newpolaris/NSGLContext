@@ -30,7 +30,7 @@ enum RenderType { legacy = 0, core, numRenderType };
 @implementation GLEssentialsView
 
 
-- (CVReturn) getFrameForTime:(const CVTimeStamp*)outputTime
+- (CVReturn)getFrameForTime:(const CVTimeStamp*)outputTime
 {
 	// There is no autorelease pool when this method is called
 	// because it will be called from a background thread.
@@ -53,7 +53,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     return result;
 }
 
-- (void) createLegayContext
+- (void)createLegayContext
 {
     NSOpenGLPixelFormatAttribute attrs[] =
     {
@@ -86,11 +86,11 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 // fine.
 // in the case of setOpenGLContext in sample project, the prepareOpenGL
 // function is called. It works find in that function.
-- (void) awakeFromNib
+- (void)awakeFromNib
 {
 }
 
-- (void) configure
+- (void)configure
 {
     [self createLegayContext];
     _renderer[legacy] = [[LegacyGLRenderer alloc] initWithDefaultFBO:0
@@ -157,7 +157,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self windowDidResize:nil];
 }
 
-- (void) setupDisplayLink
+- (void)setupDisplayLink
 {
     // Create a display link capable of being used with all active displays
     CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
@@ -188,17 +188,16 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
                                                object:[self window]];
 }
 
-- (void) windowWillClose:(NSNotification*)notification
+- (void)windowWillClose:(NSNotification*)notification
 {
-	// Stop the display link when the window is closing because default
-	// OpenGL render buffers will be destroyed.  If display link continues to
-	// fire without renderbuffers, OpenGL draw calls will set errors.
-	
-	CVDisplayLinkStop(displayLink);
+    if(notification.object == self.window)
+    {
+        CVDisplayLinkStop(displayLink);
+    }
 }
 
 
-- ( void ) windowDidResize:(NSNotification *)notofication
+- (void)windowDidResize:(NSNotification *)notofication
 {
 	// We draw on a secondary thread through the display link. However, when
 	// resizing the view, -drawRect is called on the main thread.
@@ -250,7 +249,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	CGLUnlockContext([_currentContext CGLContextObj]);
 }
 
-- (void) swapContext
+- (void)swapContext
 {
     CGLLockContext([_context[core] CGLContextObj]);
     CGLLockContext([_context[legacy] CGLContextObj]);
@@ -296,7 +295,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	[super renewGState];
 }
 
-- (void) drawRect: (NSRect) theRect
+- (void)drawRect: (NSRect) theRect
 {
 	// Called during resize operations
 	
@@ -304,7 +303,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	[self drawView];
 }
 
-- (void) drawView
+- (void)drawView
 {	 
 	[_currentContext makeCurrentContext];
 
@@ -320,7 +319,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 	CGLUnlockContext([_currentContext CGLContextObj]);
 }
 
-- (void) dealloc
+- (void)dealloc
 {
 	// Stop the display link BEFORE releasing anything in the view
     // otherwise the display link thread may call into the view and crash
