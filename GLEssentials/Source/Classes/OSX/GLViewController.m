@@ -11,14 +11,57 @@
 #import <AppKit/AppKit.h>
 #import "GLEssentialsView.h"
 
-
 @implementation GLViewController
 
+- (id)init
+{
+    self = [super init];
+    
+    if(self)
+    {
+        [self initCommon];
+    }
+    return self;
+}
+
+// Called when loaded from nib
+- (id)initWithNibName:(NSString *)nibNameOrNil
+               bundle:(NSBundle *)nibBundleOrNil
+{
+    self = [super initWithNibName:nibNameOrNil
+                           bundle:nibBundleOrNil];
+    
+    if(self)
+    {
+        [self initCommon];
+    }
+    
+    return self;
+}
+
+// called when loaded from storyboard
+- (id)initWithCoder:(NSCoder *)coder
+{
+    self = [super initWithCoder:coder];
+    
+    if(self)
+    {
+        [self initCommon];
+    }
+    
+    return self;
+}
+
+- (void)initCommon
+{
+    
+}
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
+    // in OSX 10.11.6 framebuffer state or invalid framebuffer error ocurrs
     GLEssentialsView* view = (GLEssentialsView*)self.view;
     [view configure];
 }
