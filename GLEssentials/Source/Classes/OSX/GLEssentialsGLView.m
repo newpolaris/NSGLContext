@@ -91,6 +91,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
     // [OK in 10.12.6]
     [self setOpenGLContext:context];
+    
     context.view = self;
     
     [self setup];
@@ -194,6 +195,16 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
     // OSX (but not iOS since iOS apps must create their own FBO)
     _renderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0 withContext:_coreContext];
+}
+
+-(void) swapContext
+{
+    [_coreContext makeCurrentContext];
+    
+    // initialize view to make the view update when assigning self again.
+    [_coreContext setView:nil];
+    
+    [_coreContext setView:self];
 }
 
 - (void)reshape
