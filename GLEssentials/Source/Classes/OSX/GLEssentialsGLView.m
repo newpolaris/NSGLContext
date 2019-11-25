@@ -78,12 +78,12 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [context setView:self];
 }
 
-// TODO: NSopenGLViewBackingLayer display call this function
 - (NSOpenGLContext*)openGLContext
 {
     return _currentContext;
 }
 
+// _recursiveDisplayAllDirty call this function
 - (void)lockFocus
 {
     NSOpenGLContext* context;
