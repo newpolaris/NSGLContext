@@ -34,8 +34,10 @@
     // It's important to create one or app can leak objects.
     @autoreleasepool {
         // [REPLACE]
-
-        // [10.12.6] make current not required. lock required
+        // [self drawView];
+        
+        // [10.14.6] triangle shake around
+        // [10.12.6] make current not required. contextlock required
         // [self willPresentRenderbuffer];
         [self drawSlideShowAnimation];
         // [self didPresentRenderBuffer];
@@ -92,7 +94,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     context.view = self;
     
     // [OK in 10.12.6]
-    [self setOpenGLContext:context];
+    // [Framebuffer smaller in 10.14.6]
+    // [self setOpenGLContext:context];
     
     context.view = self;
     
@@ -149,6 +152,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     // Synchronize buffer swaps with vertical refresh rate
     GLint swapInt = 1;
     [_glContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    
+    //[self setOpenGLContext:_glContext];
 }
 
 - (void)setupRenderer
