@@ -34,18 +34,13 @@
     // It's important to create one or app can leak objects.
     @autoreleasepool {
         // [REPLACE]
-        // [self drawView];
         
-        // [10.14.6] triangle shake around
+        [self drawSlideShow:nil];
+        
         // [10.12.6] make current not required. contextlock required
         // [self willPresentRenderbuffer];
         [self drawSlideShowAnimation];
         // [self didPresentRenderBuffer];
-        
-        // [10.12.6] reverse order required. flush empty draw buffer.
-        //           flush & draw loop
-        [self drawSlideShow:nil];
-
     }
     return kCVReturnSuccess;
 }
@@ -353,7 +348,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self willPresentRenderbuffer];
     [self lockFocus];
     [self render:image];
-    [self flush];
+    // [self flush];
     [self unlockFocus];
     [self didPresentRenderBuffer];
     
