@@ -7,8 +7,10 @@
  */
 
 #import "GLEssentialsGLView.h"
-#import "OpenGLRenderer.h"
+
 #import "LegacyGLRenderer.h"
+#import "OpenGLRenderer.h"
+#include "NSGLRenderer.h"
 
 #define SUPPORT_RETINA_RESOLUTION 1
 
@@ -95,6 +97,27 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     context.view = self;
     
     [self setup];
+    
+    
+    // Create a display link capable of being used with all active displays
+    CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
+    
+    // Set the renderer output callback function
+    CVDisplayLinkSetOutputCallback(displayLink, &MyDisplayLinkCallback, (__bridge void*)self);
+    
+    // Set the display link for the current renderer
+    CGLContextObj cglContext = [[self openGLContext] CGLContextObj];
+    CGLPixelFormatObj cglPixelFormat = [[self pixelFormat] CGLPixelFormatObj];
+    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, cglContext, cglPixelFormat);
+    
+    // Activate the display link
+    CVDisplayLinkStart(displayLink);
+    
+    // Register to be notified when the window closes so we can stop the displaylink
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                             selector:@selector(windowWillClose:)
+                                                 name:NSWindowWillCloseNotification
+                                               object:[self window]];
 }
 
 - (void)setup
@@ -149,25 +172,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     //  and build the necessary rendering objects
     [self initGL];
     
-    // Create a display link capable of being used with all active displays
-    CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
-    
-    // Set the renderer output callback function
-    CVDisplayLinkSetOutputCallback(displayLink, &MyDisplayLinkCallback, (__bridge void*)self);
-    
-    // Set the display link for the current renderer
-    CGLContextObj cglContext = [[self openGLContext] CGLContextObj];
-    CGLPixelFormatObj cglPixelFormat = [[self pixelFormat] CGLPixelFormatObj];
-    CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, cglContext, cglPixelFormat);
-    
-    // Activate the display link
-    CVDisplayLinkStart(displayLink);
-    
-    // Register to be notified when the window closes so we can stop the displaylink
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(windowWillClose:)
-                                                 name:NSWindowWillCloseNotification
-                                               object:[self window]];
+  
 }
 
 - (void)windowWillClose:(NSNotification*)notification
