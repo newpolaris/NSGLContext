@@ -17,7 +17,7 @@
     NSOpenGLContext* _glContext;
     id<NSGLRenderer> _glRenderer;
     
-    OpenGLRenderer* _renderer;
+    id<NSGLRenderer> _renderer;
 }
 @end
 
@@ -126,6 +126,8 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
     [self setOpenGLContext:context];
     [self openGLContext].view = self;
+    
+    [self setup];
 }
 
 - (void)setup
@@ -153,6 +155,10 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     _glContext = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
     _glContext.view = self;
     [_glContext makeCurrentContext];
+    
+    // Synchronize buffer swaps with vertical refresh rate
+    GLint swapInt = 1;
+    [_glContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
 }
 
 - (void)setupRenderer
@@ -161,6 +167,11 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     NSRect backingBound =  NSMakeRect(0, 0, presentWindowRect.size.width, presentWindowRect.size.height);
     
     _glRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0 withContext:_glContext];
+}
+
+- (NSOpenGLContext*)openGLContext
+{
+    return _glContext;
 }
 
 - (void)prepareOpenGL
@@ -261,7 +272,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
     // Set the new dimensions in our renderer
     // [REPLACE]
-    [_renderer resizeWithWidth:viewRectPixels.size.width
+    [_glRenderer resizeWithWidth:viewRectPixels.size.width
                      AndHeight:viewRectPixels.size.height];
     
     CGLUnlockContext([[self openGLContext] CGLContextObj]);
@@ -300,7 +311,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     CGLLockContext([[self openGLContext] CGLContextObj]);
     
     // [REPLACE]
-    [_renderer render];
+    [_glRenderer render];
     
     CGLFlushDrawable([[self openGLContext] CGLContextObj]);
     CGLUnlockContext([[self openGLContext] CGLContextObj]);
