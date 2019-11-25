@@ -8,11 +8,15 @@
 
 #import "GLEssentialsGLView.h"
 #import "OpenGLRenderer.h"
+#import "LegacyGLRenderer.h"
 
 #define SUPPORT_RETINA_RESOLUTION 1
 
 @interface GLEssentialsGLView ()
 {
+    NSOpenGLContext* _glContext;
+    id<NSGLRenderer> _glRenderer;
+    
     OpenGLRenderer* _renderer;
 }
 @end
@@ -26,7 +30,13 @@
     // because it will be called from a background thread.
     // It's important to create one or app can leak objects.
     @autoreleasepool {
-        [self drawView];
+        // [REPLACE]
+        // [self drawView];
+        [self drawSlideShow:nil];
+        
+        [self willPresentRenderbuffer];
+        [self drawSlideShowAnimation];
+        [self didPresentRenderBuffer];
     }
     return kCVReturnSuccess;
 }
@@ -45,6 +55,12 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void) awakeFromNib
 {
+    [self setContext];
+    [self setWantsLayer:YES];
+    [self.layer setBackgroundColor:[NSColor blackColor].CGColor];
+
+#if 0
+    
     NSOpenGLPixelFormatAttribute attrs[] =
     {
         NSOpenGLPFADoubleBuffer,
@@ -83,6 +99,69 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     // Opt-In to Retina resolution
     [self setWantsBestResolutionOpenGLSurface:YES];
 #endif // SUPPORT_RETINA_RESOLUTION
+    
+#endif
+}
+
+- (void)setContext
+{
+    NSOpenGLPixelFormatAttribute attrs[] =
+    {
+        NSOpenGLPFADoubleBuffer,
+        NSOpenGLPFADepthSize, 24,
+        // Must specify the 3.2 Core Profile to use OpenGL 3.2
+#if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3
+        NSOpenGLPFAOpenGLProfile,
+        NSOpenGLProfileVersion3_2Core,
+#endif
+        0
+    };
+    
+    NSOpenGLPixelFormat *pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+    
+    [self setPixelFormat:pf];
+    
+    NSOpenGLContext *context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    context.view = self;
+    
+    [self setOpenGLContext:context];
+    [self openGLContext].view = self;
+}
+
+- (void)setup
+{
+    [self setupContext];
+    [self setupRenderer];
+}
+
+- (void)setupContext
+{
+    NSOpenGLPixelFormatAttribute pixelFormatAttributes[] =
+    {
+        // [REPLACE]
+        // NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core,
+        NSOpenGLPFADoubleBuffer,
+        NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersionLegacy,
+        NSOpenGLPFAColorSize, 24,
+        NSOpenGLPFAAlphaSize, 8,
+        NSOpenGLPFADoubleBuffer,
+        NSOpenGLPFAAccelerated,
+        NSOpenGLPFANoRecovery,
+        0
+    };
+    NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:pixelFormatAttributes];
+    _glContext = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
+    _glContext.view = self;
+    [_glContext makeCurrentContext];
+}
+
+- (void)setupRenderer
+{
+    // glRenderer = [PORendererGL3 new];
+    NSRect presentWindowRect = [self convertRectToBacking:self.bounds];
+    NSRect backingBound =  NSMakeRect(0, 0, presentWindowRect.size.width, presentWindowRect.size.height);
+    
+    _glRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0 withContext:_glContext];
 }
 
 - (void) prepareOpenGL
@@ -225,6 +304,80 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     
     CGLFlushDrawable([[self openGLContext] CGLContextObj]);
     CGLUnlockContext([[self openGLContext] CGLContextObj]);
+}
+
+- (void)useCurrentContext
+{
+    [_glContext makeCurrentContext];
+}
+
+- (void)notUseCurrentContext
+{
+    [[self openGLContext] makeCurrentContext];
+}
+
+- (void)willPresentRenderbuffer
+{
+    [self useCurrentContext];
+}
+
+- (void)didPresentRenderBuffer
+{
+    [self notUseCurrentContext];
+}
+
+- (void)willRequestBuffer
+{
+    [self useCurrentContext];
+}
+
+- (void)didRequestBuffer
+{
+    [self notUseCurrentContext];
+}
+
+- (void)drawSlideShowAnimation
+{
+    CGLLockContext([[self openGLContext] CGLContextObj]);
+    CGLFlushDrawable([[self openGLContext] CGLContextObj]);
+    CGLUnlockContext([[self openGLContext] CGLContextObj]);
+}
+
+-(void)renderFlush
+{
+    [self drawSlideShowAnimation];
+}
+
+- (void)drawSlideShow:(unsigned char *)image
+{
+    [self willPresentRenderbuffer];
+    [self lockFocus];
+    [self render:image];
+    [self flush];
+    [self unlockFocus];
+    [self didPresentRenderBuffer];
+}
+
+- (void)render:(unsigned char *)image
+{
+    // [REPLACE]
+    // [glRenderer requestRender:image];
+    [_glRenderer render];
+}
+
+- (void)flush
+{
+    [_glContext makeCurrentContext];
+    [_glContext flushBuffer];
+}
+
+- (void)lockFocus
+{
+    [super lockFocus];
+    if ([_glContext view] != self) {
+        _glContext.view = self;
+    }
+    [_glContext makeCurrentContext];
 }
 
 - (void) dealloc
