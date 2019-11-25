@@ -136,6 +136,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     // Synchronize buffer swaps with vertical refresh rate
     GLint swapInt = 1;
     [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    
     [context setView:self];
  
     // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
@@ -147,14 +148,14 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self setWantsBestResolutionOpenGLSurface:YES];
 #endif // SUPPORT_RETINA_RESOLUTION
     
-    [self setupDisplayLink];
-    
     _currentRenderer = _renderer[kCore];
     _currentContext = _context[kCore];
     _isLeagacy = false;
     
     // setViewport with exist _renderer object
     [self windowDidResize:nil];
+    
+    [self setupDisplayLink];
 }
 
 - (void)setupDisplayLink

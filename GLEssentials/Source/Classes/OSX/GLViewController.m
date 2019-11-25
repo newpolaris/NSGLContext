@@ -57,14 +57,15 @@
     
 }
 
-- (void)viewDidLoad
+// in OSX 10.12.6 ~ 10.11.6
+// viewDidLoad - framebuffer state or invalid framebuffer error ocurrs
+//             & gl create setcontext not working - shows empty window
+- (void)viewDidAppear
 {
-    [super viewDidLoad];
+    [super viewDidAppear];
     
-    // in OSX 10.11.6 framebuffer state or invalid framebuffer error ocurrs
     GLEssentialsView* view = (GLEssentialsView*)self.view;
     [view configure];
 }
-
 
 @end
