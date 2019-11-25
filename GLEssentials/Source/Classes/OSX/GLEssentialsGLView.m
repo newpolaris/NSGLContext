@@ -14,6 +14,7 @@
 
 @interface GLEssentialsGLView ()
 {
+    NSOpenGLContext* _coreContext;
     NSOpenGLContext* _glContext;
     id<NSGLRenderer> _glRenderer;
     
@@ -31,12 +32,16 @@
     // It's important to create one or app can leak objects.
     @autoreleasepool {
         // [REPLACE]
-        [self drawView];
-        //[self drawSlideShow:nil];
+
+        // [10.12.6] make current not required. lock required
+        // [self willPresentRenderbuffer];
+        [self drawSlideShowAnimation];
+        // [self didPresentRenderBuffer];
         
-        //[self willPresentRenderbuffer];
-        //[self drawSlideShowAnimation];
-        //[self didPresentRenderBuffer];
+        // [10.12.6] reverse order required. flush empty draw buffer.
+        //           flush & draw loop
+        [self drawSlideShow:nil];
+
     }
     return kCVReturnSuccess;
 }
@@ -79,11 +84,14 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self setPixelFormat:pf];
     
     NSOpenGLContext *context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    
+    _coreContext = _glContext = context;
+    
     context.view = self;
     
     // [OK in 10.12.6]
     [self setOpenGLContext:context];
-    [self openGLContext].view = self;
+    context.view = self;
     
     [self setup];
 }
@@ -177,15 +185,15 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     // makeCurrentContext to ensure that our OpenGL context current to this
     // thread (i.e. makeCurrentContext directs all OpenGL calls on this thread
     // to [self openGLContext])
-    [[self openGLContext] makeCurrentContext];
+    [_coreContext makeCurrentContext];
     
     // Synchronize buffer swaps with vertical refresh rate
     GLint swapInt = 1;
-    [[self openGLContext] setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    [_coreContext setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
     
     // Init our renderer.  Use 0 for the defaultFBO which is appropriate for
     // OSX (but not iOS since iOS apps must create their own FBO)
-    _renderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0 withContext:[self openGLContext]];
+    _renderer = [[OpenGLRenderer alloc] initWithDefaultFBO:0 withContext:_coreContext];
 }
 
 - (void)reshape
@@ -319,12 +327,16 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)drawSlideShow:(unsigned char *)image
 {
+    CGLLockContext([[self openGLContext] CGLContextObj]);
+
     [self willPresentRenderbuffer];
     [self lockFocus];
     [self render:image];
     [self flush];
     [self unlockFocus];
     [self didPresentRenderBuffer];
+    
+    CGLUnlockContext([[self openGLContext] CGLContextObj]);
 }
 
 - (void)render:(unsigned char *)image
