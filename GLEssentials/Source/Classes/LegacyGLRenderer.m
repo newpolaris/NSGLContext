@@ -91,8 +91,8 @@
         NSLog(@"Program validate log:\n%s\n", log);
         free(log);
 
-        glDeleteProgram(prog);
-        return false;
+        //glDeleteProgram(prog);
+        //return false;
     }
 
     glUseProgram(prog);
