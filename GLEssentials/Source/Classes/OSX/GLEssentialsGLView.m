@@ -58,49 +58,6 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self setContext];
     [self setWantsLayer:YES];
     [self.layer setBackgroundColor:[NSColor blackColor].CGColor];
-
-#if 0
-    
-    NSOpenGLPixelFormatAttribute attrs[] =
-    {
-        NSOpenGLPFADoubleBuffer,
-        NSOpenGLPFADepthSize, 24,
-        // Must specify the 3.2 Core Profile to use OpenGL 3.2
-#if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3
-        NSOpenGLPFAOpenGLProfile,
-        NSOpenGLProfileVersion3_2Core,
-#endif
-        0
-    };
-    
-    NSOpenGLPixelFormat *pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-    
-    if (!pf)
-    {
-        NSLog(@"No OpenGL pixel format");
-    }
-    
-    NSOpenGLContext* context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
-    
-#if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3 && defined(DEBUG)
-    // When we're using a CoreProfile context, crash if we call a legacy OpenGL function
-    // This will make it much more obvious where and when such a function call is made so
-    // that we can remove such calls.
-    // Without this we'd simply get GL_INVALID_OPERATION error for calling legacy functions
-    // but it would be more difficult to see where that function was called.
-    CGLEnable([context CGLContextObj], kCGLCECrashOnRemovedFunctions);
-#endif
-    
-    [self setPixelFormat:pf];
-    
-    [self setOpenGLContext:context];
-    
-#if SUPPORT_RETINA_RESOLUTION
-    // Opt-In to Retina resolution
-    [self setWantsBestResolutionOpenGLSurface:YES];
-#endif // SUPPORT_RETINA_RESOLUTION
-    
-#endif
 }
 
 - (void)setContext
@@ -124,6 +81,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     NSOpenGLContext *context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
     context.view = self;
     
+    // [OK in 10.12.6]
     [self setOpenGLContext:context];
     [self openGLContext].view = self;
     
