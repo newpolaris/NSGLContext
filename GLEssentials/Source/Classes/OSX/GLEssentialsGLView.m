@@ -31,12 +31,12 @@
     // It's important to create one or app can leak objects.
     @autoreleasepool {
         // [REPLACE]
-        // [self drawView];
-        [self drawSlideShow:nil];
+        [self drawView];
+        //[self drawSlideShow:nil];
         
-        [self willPresentRenderbuffer];
-        [self drawSlideShowAnimation];
-        [self didPresentRenderBuffer];
+        //[self willPresentRenderbuffer];
+        //[self drawSlideShowAnimation];
+        //[self didPresentRenderBuffer];
     }
     return kCVReturnSuccess;
 }
@@ -157,14 +157,13 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 
 - (void)setupRenderer
 {
-    // glRenderer = [PORendererGL3 new];
     NSRect presentWindowRect = [self convertRectToBacking:self.bounds];
     NSRect backingBound =  NSMakeRect(0, 0, presentWindowRect.size.width, presentWindowRect.size.height);
     
     _glRenderer = [[LegacyGLRenderer alloc] initWithDefaultFBO:0 withContext:_glContext];
 }
 
-- (void) prepareOpenGL
+- (void)prepareOpenGL
 {
     [super prepareOpenGL];
     
@@ -193,7 +192,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
                                                object:[self window]];
 }
 
-- (void) windowWillClose:(NSNotification*)notification
+- (void)windowWillClose:(NSNotification*)notification
 {
     // Stop the display link when the window is closing because default
     // OpenGL render buffers will be destroyed.  If display link continues to
@@ -202,7 +201,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     CVDisplayLinkStop(displayLink);
 }
 
-- (void) initGL
+- (void)initGL
 {
     // The reshape function may have changed the thread to which our OpenGL
     // context is attached before prepareOpenGL and initGL are called.  So call
@@ -261,12 +260,12 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 #endif // !SUPPORT_RETINA_RESOLUTION
     
     // Set the new dimensions in our renderer
+    // [REPLACE]
     [_renderer resizeWithWidth:viewRectPixels.size.width
                      AndHeight:viewRectPixels.size.height];
     
     CGLUnlockContext([[self openGLContext] CGLContextObj]);
 }
-
 
 - (void)renewGState
 {
@@ -282,7 +281,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [super renewGState];
 }
 
-- (void) drawRect: (NSRect) theRect
+- (void)drawRect: (NSRect) theRect
 {
     // Called during resize operations
     
@@ -290,7 +289,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self drawView];
 }
 
-- (void) drawView
+- (void)drawView
 {
     [[self openGLContext] makeCurrentContext];
     
@@ -300,6 +299,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     // simultaneously when resizing
     CGLLockContext([[self openGLContext] CGLContextObj]);
     
+    // [REPLACE]
     [_renderer render];
     
     CGLFlushDrawable([[self openGLContext] CGLContextObj]);
