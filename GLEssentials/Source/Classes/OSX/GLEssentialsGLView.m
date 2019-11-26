@@ -372,6 +372,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [_glContext flushBuffer];
 }
 
+// [10.11.6] NSInternalInconsistencyException
 - (void)lockFocus
 {
     [super lockFocus];
