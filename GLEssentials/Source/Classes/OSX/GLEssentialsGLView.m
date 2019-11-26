@@ -207,9 +207,13 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [_coreContext makeCurrentContext];
     
     // initialize view to make the view update when assigning self again.
-    [_coreContext setView:nil];
+    
+    // [??]
+    // [_coreContext setView:nil];
     
     [_coreContext setView:self];
+    
+    [_glContext setView:self];
 }
 
 - (void)reshape
