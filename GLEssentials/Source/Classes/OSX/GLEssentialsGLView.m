@@ -64,6 +64,25 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     [self.layer setBackgroundColor:[NSColor blackColor].CGColor];
 }
 
+- (instancetype)initWithFrame:(NSRect)frameRect
+{
+    if (self = [super initWithFrame:frameRect])
+    {
+        [self setContext];
+        [self setWantsLayer:YES];
+        [self.layer setBackgroundColor:[NSColor blackColor].CGColor];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)decoder
+{
+    if (self = [super initWithCoder:decoder])
+    {
+    }
+    return self;
+}
+
 - (void)setContext
 {
     NSOpenGLPixelFormatAttribute attrs[] =
@@ -340,6 +359,11 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     CGLUnlockContext([[self openGLContext] CGLContextObj]);
 }
 
+- (void)setFrameSize:(NSSize)newSize
+{
+    [super setFrameSize:newSize];
+}
+
 -(void)renderFlush
 {
     [self drawSlideShowAnimation];
@@ -373,7 +397,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 }
 
 // [10.11.6] NSInternalInconsistencyException
-// [10.12.6] No error;
+// [10.12.6] Error some times; (access violation)
 - (void)lockFocus
 {
     [super lockFocus];

@@ -7,8 +7,12 @@
 //
 
 #import "EmptyView.h"
+#import "GLEssentialsGLView.h"
 
 @implementation EmptyView
+{
+    GLEssentialsGLView* view;
+}
 
 - (void)initCommon
 {
@@ -32,6 +36,27 @@
     return self;
 }
 
+- (void)awakeFromNib
+{
+    view = [[GLEssentialsGLView alloc] initWithFrame:NSZeroRect];
+    [self addSubview:view];
+}
+
+- (void)setFrameSize:(NSSize)newSize
+{
+
+    [super setFrameSize:newSize];
+    
+    CGLLockContext([[view openGLContext] CGLContextObj]);
+    
+    [view setFrameSize:newSize];
+    
+
+    [[view openGLContext] makeCurrentContext];
+    [[view openGLContext] update];
+    
+    CGLUnlockContext([[view openGLContext] CGLContextObj]);
+}
 
 - (void)drawRect:(NSRect)dirtyRect {
     [super drawRect:dirtyRect];
