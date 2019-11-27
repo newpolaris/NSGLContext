@@ -51,8 +51,8 @@
     CGLLockContext([[view openGLContext] CGLContextObj]);
     
     [[view openGLContext] makeCurrentContext];
-    // FRAME BUFFER
-    // [[view openGLContext] update];
+    // FRAME BUFFER UPDATE
+    [[view openGLContext] update];
     
     CGLUnlockContext([[view openGLContext] CGLContextObj]);
 }
