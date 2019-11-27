@@ -59,7 +59,8 @@
     NSOpenGLContext *context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
     [self setOpenGLContext:context];
 
-    view = [[GLEssentialsGLView alloc] initWithFrame:NSZeroRect];
+    NSRect rect = NSMakeRect(100, 50, 200, 200);
+    view = [[GLEssentialsGLView alloc] initWithFrame:rect];
     [self addSubview:view];
     // [view removeFromSuperview];
 }
@@ -68,7 +69,7 @@
 {
     [super setFrameSize:newSize];
     
-    [view setFrameSize:newSize];
+    // [view setFrameSize:newSize];
     
     CGLLockContext([[view openGLContext] CGLContextObj]);
     
