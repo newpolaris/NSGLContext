@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2B25A15A238E270200DF270C /* EmptyView.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B25A159238E270200DF270C /* EmptyView.m */; };
+		2B639549238E267F00867C3E /* GLViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 2B639548238E267F00867C3E /* GLViewController.m */; };
 		301D56F31B41D64500EDF1DD /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 301D56F21B41D64500EDF1DD /* AppDelegate.m */; };
 		3A0574011A89808F001A7683 /* character.fsh in Resources */ = {isa = PBXBuildFile; fileRef = 3A4CF89F1A89593700324DBF /* character.fsh */; };
 		3A0574021A89808F001A7683 /* character.vsh in Resources */ = {isa = PBXBuildFile; fileRef = 3A4CF8A01A89593700324DBF /* character.vsh */; };
@@ -50,7 +52,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		2B2BF326238B978300290D61 /* GLEssentialsGLView 복사본.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "GLEssentialsGLView 복사본.m"; sourceTree = "<group>"; };
+		2B25A158238E270200DF270C /* EmptyView.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EmptyView.h; sourceTree = "<group>"; };
+		2B25A159238E270200DF270C /* EmptyView.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = EmptyView.m; sourceTree = "<group>"; };
+		2B639547238E267F00867C3E /* GLViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GLViewController.h; sourceTree = "<group>"; };
+		2B639548238E267F00867C3E /* GLViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GLViewController.m; sourceTree = "<group>"; };
 		301D56F11B41D64500EDF1DD /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		301D56F21B41D64500EDF1DD /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		3047849F1B323BA9004B5A28 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = Readme.md; path = GLEssentials/Source/Readme.md; sourceTree = "<group>"; };
@@ -231,7 +236,6 @@
 		3A622B6D1A899CDE00A12489 /* OSX */ = {
 			isa = PBXGroup;
 			children = (
-				2B2BF326238B978300290D61 /* GLEssentialsGLView 복사본.m */,
 				301D56F11B41D64500EDF1DD /* AppDelegate.h */,
 				301D56F21B41D64500EDF1DD /* AppDelegate.m */,
 				3A622B6E1A899CDE00A12489 /* GLEssentialsFullscreenWindow.h */,
@@ -240,6 +244,10 @@
 				3A622B711A899CDE00A12489 /* GLEssentialsGLView.m */,
 				3A622B721A899CDE00A12489 /* GLEssentialsWindowController.h */,
 				3A622B731A899CDE00A12489 /* GLEssentialsWindowController.m */,
+				2B639547238E267F00867C3E /* GLViewController.h */,
+				2B639548238E267F00867C3E /* GLViewController.m */,
+				2B25A158238E270200DF270C /* EmptyView.h */,
+				2B25A159238E270200DF270C /* EmptyView.m */,
 			);
 			path = OSX;
 			sourceTree = "<group>";
@@ -393,11 +401,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2B25A15A238E270200DF270C /* EmptyView.m in Sources */,
 				301D56F31B41D64500EDF1DD /* AppDelegate.m in Sources */,
 				3A622B971A899CF400A12489 /* GLEssentialsWindowController.m in Sources */,
 				3A622B931A899CE900A12489 /* vectorUtil.c in Sources */,
 				3A622B921A899CE900A12489 /* sourceUtil.c in Sources */,
 				3A622B901A899CE900A12489 /* matrixUtil.c in Sources */,
+				2B639549238E267F00867C3E /* GLViewController.m in Sources */,
 				3A622B961A899CF400A12489 /* GLEssentialsGLView.m in Sources */,
 				3A622B911A899CE900A12489 /* modelUtil.c in Sources */,
 				3A622B941A899CEC00A12489 /* main.m in Sources */,
