@@ -44,16 +44,15 @@
 
 - (void)setFrameSize:(NSSize)newSize
 {
-
     [super setFrameSize:newSize];
-    
-    CGLLockContext([[view openGLContext] CGLContextObj]);
     
     [view setFrameSize:newSize];
     
-
+    CGLLockContext([[view openGLContext] CGLContextObj]);
+    
     [[view openGLContext] makeCurrentContext];
-    [[view openGLContext] update];
+    // FRAME BUFFER
+    // [[view openGLContext] update];
     
     CGLUnlockContext([[view openGLContext] CGLContextObj]);
 }

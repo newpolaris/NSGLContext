@@ -373,11 +373,14 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 {
     CGLLockContext([[self openGLContext] CGLContextObj]);
 
+    // [[self openGLContext] setView:nil];
+    // [[self openGLContext] setView:self];
+    
     [self willPresentRenderbuffer];
-    [self lockFocus];
+    // [self lockFocus];
     [self render:image];
     // [self flush];
-    [self unlockFocus];
+    // [self unlockFocus];
     [self didPresentRenderBuffer];
     
     CGLUnlockContext([[self openGLContext] CGLContextObj]);
