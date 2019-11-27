@@ -151,7 +151,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     //[self setOpenGLContext:_glContext];
 }
 
-- (void)setupRenderer
+- (void)setupRenderer	
 {
     NSRect presentWindowRect = [self convertRectToBacking:self.bounds];
     NSRect backingBound =  NSMakeRect(0, 0, presentWindowRect.size.width, presentWindowRect.size.height);
