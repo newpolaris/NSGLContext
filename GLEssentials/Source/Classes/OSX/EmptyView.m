@@ -24,6 +24,7 @@
 {
     if((self = [super initWithFrame:frameRect]))
     {
+        [self initCommon];
     }
     return self;
 }
@@ -32,14 +33,35 @@
 {
     if(self = [super initWithCoder:decoder])
     {
+        [self initCommon];
     }
     return self;
 }
 
 - (void)awakeFromNib
 {
+    NSOpenGLPixelFormatAttribute attrs[] =
+    {
+        NSOpenGLPFADoubleBuffer,
+        NSOpenGLPFADepthSize, 24,
+        // Must specify the 3.2 Core Profile to use OpenGL 3.2
+#if ESSENTIAL_GL_PRACTICES_SUPPORT_GL3
+        NSOpenGLPFAOpenGLProfile,
+        NSOpenGLProfileVersion3_2Core,
+#endif
+        0
+    };
+    
+    NSOpenGLPixelFormat *pf = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
+    
+    [self setPixelFormat:pf];
+    
+    NSOpenGLContext *context = [[NSOpenGLContext alloc] initWithFormat:pf shareContext:nil];
+    [self setOpenGLContext:context];
+
     view = [[GLEssentialsGLView alloc] initWithFrame:NSZeroRect];
     [self addSubview:view];
+    // [view removeFromSuperview];
 }
 
 - (void)setFrameSize:(NSSize)newSize
@@ -51,16 +73,31 @@
     CGLLockContext([[view openGLContext] CGLContextObj]);
     
     [[view openGLContext] makeCurrentContext];
-    // FRAME BUFFER
-    // [[view openGLContext] update];
+    // FRAME BUFFER UPDATE
+    [[view openGLContext] update];
     
     CGLUnlockContext([[view openGLContext] CGLContextObj]);
 }
 
 - (void)drawRect:(NSRect)dirtyRect {
-    [super drawRect:dirtyRect];
+    // no need
+    // [super drawRect:dirtyRect];
     
-    // Drawing code here.
+    CGLLockContext([[view openGLContext] CGLContextObj]);
+    CGLLockContext([[self openGLContext] CGLContextObj]);
+    
+    [[self openGLContext] makeCurrentContext];
+    static float k = 0;
+    k+= 0.05f;
+    
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    glClearColor(sin(k), 0, 0, 1);
+    glClear(GL_COLOR_BUFFER_BIT);
+    
+
+    CGLFlushDrawable([[self openGLContext] CGLContextObj]);
+    CGLUnlockContext([[self openGLContext] CGLContextObj]);
+    CGLUnlockContext([[view openGLContext] CGLContextObj]);
 }
 
 @end

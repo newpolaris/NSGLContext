@@ -8,6 +8,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-@interface EmptyView : NSView
+@interface EmptyView : NSOpenGLView
 
 @end

@@ -124,6 +124,12 @@
         case 'a':
             [self swapContext];
             return;
+        case 'b':
+            //[self addSubView];
+            return;
+        case 'c':
+            //[self removeSubview];
+            return;
 		// Have f key toggle fullscreen
 		case 'f':
 			if(_fullscreenWindow == nil)
