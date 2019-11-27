@@ -57,7 +57,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
     return result;
 }
 
-- (void) awakeFromNib
+- (void)awakeFromNib
 {
     [self setContext];
     [self setWantsLayer:YES];
@@ -373,6 +373,7 @@ static CVReturn MyDisplayLinkCallback(CVDisplayLinkRef displayLink,
 }
 
 // [10.11.6] NSInternalInconsistencyException
+// [10.12.6] No error;
 - (void)lockFocus
 {
     [super lockFocus];

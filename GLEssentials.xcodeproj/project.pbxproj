@@ -50,6 +50,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		2B2BF326238B978300290D61 /* GLEssentialsGLView 복사본.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = "GLEssentialsGLView 복사본.m"; sourceTree = "<group>"; };
 		301D56F11B41D64500EDF1DD /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		301D56F21B41D64500EDF1DD /* AppDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		3047849F1B323BA9004B5A28 /* Readme.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; name = Readme.md; path = GLEssentials/Source/Readme.md; sourceTree = "<group>"; };
@@ -230,6 +231,7 @@
 		3A622B6D1A899CDE00A12489 /* OSX */ = {
 			isa = PBXGroup;
 			children = (
+				2B2BF326238B978300290D61 /* GLEssentialsGLView 복사본.m */,
 				301D56F11B41D64500EDF1DD /* AppDelegate.h */,
 				301D56F21B41D64500EDF1DD /* AppDelegate.m */,
 				3A622B6E1A899CDE00A12489 /* GLEssentialsFullscreenWindow.h */,
